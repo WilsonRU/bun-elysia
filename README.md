@@ -1,4 +1,4 @@
-# 🚀 Backend Project --- Bun + Elysia + Kysely
+# 🚀 Bun + Elysia + Kysely
 
 This project is built using **Bun** as the JavaScript/TypeScript
 runtime, **Elysia** as the lightweight and expressive API framework, and
