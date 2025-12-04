@@ -22,6 +22,7 @@ async function migrate() {
 	});
 
 	if (error) {
+		console.error(error);
 		process.exit(1);
 	}
 	await db.destroy();
