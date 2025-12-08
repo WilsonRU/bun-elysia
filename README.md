@@ -103,7 +103,7 @@ After starting the server, access:
     │  └─ types/                                # Shared interface/types
     │     └─ elysia.ts
     │
-    └─ bootstrap.ts                             # Application bootstrap entrypoint
+    └─ index.ts                                 # Application bootstrap entrypoint
 
 ## 🧪 Tests
 
