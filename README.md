@@ -55,11 +55,11 @@ After starting the server, access:
 
   Command                Description
   ---------------------- ----------------------------------------------
-  `bun dev`              Starts the development server
-  `bun migrate:run`      Applies all pending migrations
-  `bun migrate:create`   Generates a new migration file
-  `bun lint`             Runs Biome linter to check code quality.
-  `bun format`             Formats all project files using Biome.
+  `bun dev`              Starts the development server.\
+  `bun migrate:run`      Applies all pending migrations.\
+  `bun migrate:create`   Generates a new migration file.\
+  `bun lint`             Runs Biome linter to check code quality.\
+  `bun format`           Formats all project files using Biome.\
   `bun run build`        Builds the project for production.
 
 ## 📂 Project Structure
@@ -92,7 +92,7 @@ After starting the server, access:
     │  │  ├─ routes.ts                         # Core-related HTTP routes
     │  │  └─ types.ts                          # Main file containing core context types and enums.
     │  └─ user/                                
-    │     ├─ core.ts                           #It contains the core business functions, central logic, and services that are reused for the context.
+    │     ├─ core.ts                           # It contains the core business functions, central logic, and services that are reused for the context.
     │     ├─ model.ts                          # User model and database mapping
     │     ├─ routes.ts                         # User-related HTTP routes
     │     └─ types.ts                          # Main file containing user context types and enums.
