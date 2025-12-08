@@ -2,16 +2,16 @@
 
 This project is built using **Bun** as the JavaScript/TypeScript
 runtime, **Elysia** as the lightweight and expressive API framework, and
-**Kysely** as the type-safe SQL query builder and ORM.\
+**Kysely** as the type-safe SQL query builder and ORM.
 It also includes the **OpenAPI** and **CORS** plugins for Elysia.
 
 ## 📦 Tech Stack
 
--   **Bun** --- Ultra-fast JS/TS runtime\
+-   **Bun** --- Ultra-fast JS/TS runtime
 -   **ElysiaJS** --- Modern, minimal API framework
-    -   **@elysiajs/openapi** for automatic API documentation\
-    -   **@elysiajs/cors** for CORS handling\
--   **Kysely ORM** --- Type-safe database queries\
+    -   **@elysiajs/openapi** for automatic API documentation
+    -   **@elysiajs/cors** for CORS handling
+-   **Kysely ORM** --- Type-safe database queries
 -   **Database migrations** controlled via CLI
 -   **Biome** --- performant linter
 
@@ -59,7 +59,7 @@ After starting the server, access:
   `bun migrate:run`      Applies all pending migrations
   `bun migrate:create`   Generates a new migration file
   `bun lint`             Runs Biome linter to check code quality.
-  `bun lint`             Formats all project files using Biome.
+  `bun format`             Formats all project files using Biome.
   `bun run build`        Builds the project for production.
 
 ## 📂 Project Structure
@@ -86,16 +86,16 @@ After starting the server, access:
     ├─ config/
     │  └─ env.ts                               # Environment variables loading
     │
-    ├─ modules/
-    │  ├─ core/                                # Core system module
-    │  │  ├─ core.ts
-    │  │  ├─ routes.ts
-    │  │  └─ types.ts
-    │  └─ user/                                # User domain module
-    │     ├─ core.ts
+    ├─ modules/                                # Bounded context
+    │  ├─ core/                                
+    │  │  ├─ core.ts                           # It contains the core business functions, central logic, and services that are reused for the context.
+    │  │  ├─ routes.ts                         # Core-related HTTP routes
+    │  │  └─ types.ts                          # Main file containing core context types and enums.
+    │  └─ user/                                
+    │     ├─ core.ts                           #It contains the core business functions, central logic, and services that are reused for the context.
     │     ├─ model.ts                          # User model and database mapping
     │     ├─ routes.ts                         # User-related HTTP routes
-    │     └─ types.ts
+    │     └─ types.ts                          # Main file containing user context types and enums.
     │
     ├─ shared/
     │  ├─ errors/                               # Custom error classes
