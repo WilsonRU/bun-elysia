@@ -1,21 +1,22 @@
-# 🚀 Bun + Elysia + Kysely
+# Bun + Elysia + Kysely
 
 This project is built using **Bun** as the JavaScript/TypeScript
 runtime, **Elysia** as the lightweight and expressive API framework, and
 **Kysely** as the type-safe SQL query builder and ORM.
 It also includes the **OpenAPI** and **CORS** plugins for Elysia.
 
-## 📦 Tech Stack
+## Tech Stack
 
--   **Bun** --- Ultra-fast JS/TS runtime
--   **ElysiaJS** --- Modern, minimal API framework
+-   **Bun** - Ultra-fast JS/TS runtime
+-   **ElysiaJS** - Modern, minimal API framework
     -   **@elysiajs/openapi** for automatic API documentation
     -   **@elysiajs/cors** for CORS handling
--   **Kysely ORM** --- Type-safe database queries
+    -   **@elysiajs/jwt** for JWT Token Authentication
+-   **Kysely ORM** - Type-safe database queries
 -   **Database migrations** controlled via CLI
--   **Biome** --- performant linter
+-   **Biome** - performant linter
 
-## 🛠️ Development
+## Development
 
 Start the development server:
 
@@ -41,7 +42,7 @@ bun migrate:run
 bun migrate:create <name-of-migration>
 ```
 
-## 📘 API Documentation
+## API Documentation
 
 OpenAPI documentation is automatically generated using the Elysia
 OpenAPI plugin.
@@ -51,7 +52,7 @@ After starting the server, access:
 👉 `/docs` --- Scalar UI\
 👉 `/openapi.json` --- Raw OpenAPI schema
 
-## 🔧 Available Scripts
+## Available Scripts
 
   Command                Description
   ---------------------- ----------------------------------------------
@@ -62,7 +63,7 @@ After starting the server, access:
   `bun format`           Formats all project files using Biome.\
   `bun run build`        Builds the project for production.
 
-## 📂 Project Structure
+## Project Structure
 
     src/
     ├─ adapters/
@@ -105,7 +106,7 @@ After starting the server, access:
     │
     └─ index.ts                                 # Application bootstrap entrypoint
 
-## 🧪 Tests
+## Tests
 
 ``` bash
 bun test

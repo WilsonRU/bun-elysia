@@ -1,9 +1,9 @@
 {
-  "name": "bun-rest-app",
+  "name": "bun-elysia",
   "version": "1.0.50",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun run --watch src/index.ts | pino-pretty",
+    "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "biome lint --write ./src",
     "format": "biome format --write ./src",
     "migrate:run": "bun run src/adapters/db/scripts/migrate.ts",
