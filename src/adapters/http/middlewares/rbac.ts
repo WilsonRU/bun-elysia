@@ -1,8 +1,12 @@
-import Elysia from "elysia";
+import Elysia, { Context } from "elysia";
 import { db } from "@/adapters/db/kysely";
 import { JwtPlugin } from "@/adapters/http/security/jwt";
 import { authGuard } from "@/adapters/http/middlewares/auth";
 import { AppError } from "@/shared/erros/appError";
+
+type AuthContext = {
+	user: number;
+};
 
 export const RBAC = new Elysia()
 	.use(JwtPlugin)
@@ -10,14 +14,14 @@ export const RBAC = new Elysia()
 	.macro({
 		RBAC: (roles: string[]) => ({
 			protectedRoute: true,
-			async resolve(context: any) {
-				const user = await db
+			async resolve({ user }: Context & AuthContext) {
+				const userRecord = await db
 					.selectFrom("users")
-					.where("id", "=", (context as any).user)
+					.where("id", "=", user)
 					.selectAll()
 					.executeTakeFirstOrThrow();
 
-				if (!roles.includes(user.role)) {
+				if (!roles.includes(userRecord.role)) {
 					throw new AppError("You do not have permission to access this resource.", 403);
 				}
 			},
