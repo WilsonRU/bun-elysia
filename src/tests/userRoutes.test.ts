@@ -3,6 +3,9 @@ import Elysia from "elysia";
 import { mkdir, unlink } from "node:fs/promises";
 import { JwtPlugin } from "@/adapters/http/security/jwt";
 import { config } from "@/config/env";
+import { createAuthGuard } from "@/adapters/http/middlewares/auth";
+import { createUserRoutes } from "@/modules/user/routes";
+import type { db as database } from "@/adapters/db/kysely";
 
 const authUser = {
 	id: 1,
@@ -23,18 +26,15 @@ const selectFromMock = mock(() => selectQuery);
 const updateUserNameMock = mock();
 const uploadAvatarMock = mock();
 
-mock.module("@/adapters/db/kysely", () => ({
-	db: {
-		selectFrom: selectFromMock,
-	},
-}));
+const dbMock = {
+	selectFrom: selectFromMock,
+} as unknown as typeof database;
 
-mock.module("@/modules/user/core", () => ({
+const userRoutes = createUserRoutes({
+	authGuard: createAuthGuard({ db: dbMock, config }),
 	updateUserName: updateUserNameMock,
 	uploadAvatar: uploadAvatarMock,
-}));
-
-const { userRoutes } = await import("@/modules/user/routes");
+});
 
 const avatarPath = "uploads/avatars/test-avatar.png";
 const user = {

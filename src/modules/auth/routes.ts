@@ -11,91 +11,102 @@ const authRateLimit = createRateLimit({
 	max: 10,
 });
 
-export const authRoutes = new Elysia({ prefix: "/auth" })
-	.use(JwtPlugin)
-	.post(
-		"/signin",
-		async (ctx) => {
-			const { body, jwt } = ctx;
+type AuthRoutesContext = {
+	signin: typeof signin;
+	signup: typeof signup;
+};
 
-			const user = await signin({
-				email: body.email,
-				password: body.password,
-			});
+function createAuthRoutes(context: AuthRoutesContext = { signin, signup }) {
+	return new Elysia({ prefix: "/auth" })
+		.use(JwtPlugin)
+		.post(
+			"/signin",
+			async (ctx) => {
+				const { body, jwt } = ctx;
 
-			const token = await jwt.sign({
-				sub: String(user.id),
-				aud: config.jwtAudience,
-				iss: config.jwtIssuer,
-			});
+				const user = await context.signin({
+					email: body.email,
+					password: body.password,
+				});
 
-			ctx.set.status = 200;
-			return {
-				user,
-				token,
-			};
-		},
-		{
-			body: t.Object({
-				email: t.String({ format: "email" }),
-				password: t.String({ minLength: 6 }),
-			}),
-			response: {
-				200: t.Object({
-					user: TUserPublic,
-					token: t.String(),
-				}),
-				401: t.Object({
-					message: t.String(),
-				}),
-				429: t.Object({
-					message: t.String(),
-				}),
+				const token = await jwt.sign({
+					sub: String(user.id),
+					aud: config.jwtAudience,
+					iss: config.jwtIssuer,
+				});
+
+				ctx.set.status = 200;
+				return {
+					user,
+					token,
+				};
 			},
-			beforeHandle: authRateLimit,
-			detail: {
-				tags: ["Auth"],
-				description: "User Login",
-				summary: "Authenticate user",
+			{
+				body: t.Object({
+					email: t.String({ format: "email" }),
+					password: t.String({ minLength: 6 }),
+				}),
+				response: {
+					200: t.Object({
+						user: TUserPublic,
+						token: t.String(),
+					}),
+					401: t.Object({
+						message: t.String(),
+					}),
+					429: t.Object({
+						message: t.String(),
+					}),
+				},
+				beforeHandle: authRateLimit,
+				detail: {
+					tags: ["Auth"],
+					description: "User Login",
+					summary: "Authenticate user",
+				},
 			},
-		},
-	)
-	.post(
-		"/signup",
-		async (ctx) => {
-			const { body } = ctx;
+		)
+		.post(
+			"/signup",
+			async (ctx) => {
+				const { body } = ctx;
 
-			await signup({
-				name: body.name,
-				email: body.email,
-				password: body.password,
-			});
+				await context.signup({
+					name: body.name,
+					email: body.email,
+					password: body.password,
+				});
 
-			ctx.set.status = 201;
-			return { message: "User created successfully" };
-		},
-		{
-			body: t.Object({
-				name: t.String({ minLength: 3, maxLength: 50 }),
-				email: t.String({ format: "email" }),
-				password: t.String({ minLength: 6 }),
-			}),
-			response: {
-				201: t.Object({
-					message: t.String(),
-				}),
-				409: t.Object({
-					message: t.String(),
-				}),
-				429: t.Object({
-					message: t.String(),
-				}),
+				ctx.set.status = 201;
+				return { message: "User created successfully" };
 			},
-			beforeHandle: authRateLimit,
-			detail: {
-				tags: ["Auth"],
-				description: "User Registration",
-				summary: "Register a new user",
+			{
+				body: t.Object({
+					name: t.String({ minLength: 3, maxLength: 50 }),
+					email: t.String({ format: "email" }),
+					password: t.String({ minLength: 6 }),
+				}),
+				response: {
+					201: t.Object({
+						message: t.String(),
+					}),
+					409: t.Object({
+						message: t.String(),
+					}),
+					429: t.Object({
+						message: t.String(),
+					}),
+				},
+				beforeHandle: authRateLimit,
+				detail: {
+					tags: ["Auth"],
+					description: "User Registration",
+					summary: "Register a new user",
+				},
 			},
-		},
-	);
+		);
+}
+
+const authRoutes = createAuthRoutes();
+
+export { authRoutes, createAuthRoutes };

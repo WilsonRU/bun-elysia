@@ -2,16 +2,11 @@ import { beforeEach, describe, expect, it, mock } from "bun:test";
 import Elysia from "elysia";
 import { errorHandler } from "@/adapters/http/middlewares/errorHandler";
 import { AppError } from "@/shared/errors/appError";
+import { createAuthRoutes } from "@/modules/auth/routes";
 
 const signinMock = mock();
 const signupMock = mock();
-
-mock.module("@/modules/auth/core", () => ({
-	signin: signinMock,
-	signup: signupMock,
-}));
-
-const { authRoutes } = await import("@/modules/auth/routes");
+const authRoutes = createAuthRoutes({ signin: signinMock, signup: signupMock });
 const app = new Elysia().onError(errorHandler).use(authRoutes);
 
 const user = {

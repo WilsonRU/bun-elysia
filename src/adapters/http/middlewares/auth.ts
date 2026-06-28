@@ -1,10 +1,13 @@
 import Elysia from "elysia";
-import { db } from "@/adapters/db/kysely";
+import { db as database } from "@/adapters/db/kysely";
 import { JwtPlugin } from "@/adapters/http/security/jwt";
-import { config } from "@/config/env";
+import { config as appConfig } from "@/config/env";
 import type { AuthUser } from "@/modules/user/types";
 
-const authUserCache = new Map<number, { user: AuthUser; expiresAt: number }>();
+type AuthGuardContext = {
+	db: typeof database;
+	config: typeof appConfig;
+};
 
 function parseBearerToken(authHeader: string | null) {
 	if (!authHeader) return null;
@@ -13,7 +16,11 @@ function parseBearerToken(authHeader: string | null) {
 	return match?.[1]?.trim() || null;
 }
 
-function getCachedAuthUser(userId: number) {
+function getCachedAuthUser(
+	authUserCache: Map<number, { user: AuthUser; expiresAt: number }>,
+	config: typeof appConfig,
+	userId: number,
+) {
 	if (config.authUserCacheTtlMs === 0) return null;
 
 	const cached = authUserCache.get(userId);
@@ -27,7 +34,11 @@ function getCachedAuthUser(userId: number) {
 	return cached.user;
 }
 
-function setCachedAuthUser(user: AuthUser) {
+function setCachedAuthUser(
+	authUserCache: Map<number, { user: AuthUser; expiresAt: number }>,
+	config: typeof appConfig,
+	user: AuthUser,
+) {
 	if (config.authUserCacheTtlMs === 0) return;
 
 	if (authUserCache.size >= config.authUserCacheMax) {
@@ -53,55 +64,62 @@ function setCachedAuthUser(user: AuthUser) {
 	});
 }
 
-export const authGuard = new Elysia().use(JwtPlugin).macro({
-	protectedRoute: {
-		value: true,
-		async resolve({ status, request: { headers }, jwt }) {
-			const authHeader = headers.get("Authorization");
-			if (!authHeader) return status(401, "Missing Authorization header");
+function createAuthGuard(context: AuthGuardContext = { db: database, config: appConfig }) {
+	const authUserCache = new Map<number, { user: AuthUser; expiresAt: number }>();
+	const { config, db } = context;
 
-			const token = parseBearerToken(authHeader);
-			if (!token) return status(401, "Invalid Authorization format");
+	return new Elysia().use(JwtPlugin).macro({
+		protectedRoute: {
+			value: true,
+			async resolve({ status, request: { headers }, jwt }) {
+				const authHeader = headers.get("Authorization");
+				if (!authHeader) return status(401, "Missing Authorization header");
 
-			const payload = await jwt.verify(token);
-			if (!payload) return status(401, "Invalid token");
-			if (payload.aud !== config.jwtAudience) return status(401, "Invalid token audience");
-			if (payload.iss !== config.jwtIssuer) return status(401, "Invalid token issuer");
+				const token = parseBearerToken(authHeader);
+				if (!token) return status(401, "Invalid Authorization format");
 
-			const userId = Number(payload.sub);
-			if (!Number.isInteger(userId)) return status(401, "Invalid token subject");
+				const payload = await jwt.verify(token);
+				if (!payload) return status(401, "Invalid token");
+				if (payload.aud !== config.jwtAudience) return status(401, "Invalid token audience");
+				if (payload.iss !== config.jwtIssuer) return status(401, "Invalid token issuer");
 
-			const cachedAuthUser = getCachedAuthUser(userId);
-			if (cachedAuthUser) return { authUser: cachedAuthUser };
+				const userId = Number(payload.sub);
+				if (!Number.isInteger(userId)) return status(401, "Invalid token subject");
 
-			const authUser = await db
-				.selectFrom("users")
-				.select(["id", "role"])
-				.where("id", "=", userId)
-				.where("deleted_at", "is", null)
-				.executeTakeFirst();
+				const cachedAuthUser = getCachedAuthUser(authUserCache, config, userId);
+				if (cachedAuthUser) return { authUser: cachedAuthUser };
 
-			if (!authUser) return status(401, "Invalid token user");
+				const authUser = await db
+					.selectFrom("users")
+					.select(["id", "role"])
+					.where("id", "=", userId)
+					.where("deleted_at", "is", null)
+					.executeTakeFirst();
 
-			setCachedAuthUser(authUser);
+				if (!authUser) return status(401, "Invalid token user");
 
-			return { authUser };
-		},
-	},
-	RBAC(roles: Array<AuthUser["role"]>) {
-		return {
-			beforeHandle({
-				authUser,
-				status,
-			}: {
-				authUser?: AuthUser;
-				status: (code: 401 | 403, response: string) => unknown;
-			}) {
-				if (!authUser) return status(401, "Authentication required");
-				if (!roles.includes(authUser.role)) return status(403, "Insufficient permissions");
+				setCachedAuthUser(authUserCache, config, authUser);
+
+				return { authUser };
 			},
-		};
-	},
-});
+		},
+		RBAC(roles: Array<AuthUser["role"]>) {
+			return {
+				beforeHandle({
+					authUser,
+					status,
+				}: {
+					authUser?: AuthUser;
+					status: (code: 401 | 403, response: string) => unknown;
+				}) {
+					if (!authUser) return status(401, "Authentication required");
+					if (!roles.includes(authUser.role)) return status(403, "Insufficient permissions");
+				},
+			};
+		},
+	});
+}
 
-export { parseBearerToken };
+const authGuard = createAuthGuard();
+
+export { authGuard, createAuthGuard, parseBearerToken };

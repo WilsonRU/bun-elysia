@@ -124,9 +124,13 @@ After starting the server, access:
     │     └─ elysia.ts
     │
     ├─ tests/                                   # Centralized test files
+    │  ├─ authCore.test.ts
+    │  ├─ authGuard.test.ts
     │  ├─ auth.test.ts
     │  ├─ authRoutes.test.ts
+    │  ├─ env.test.ts
     │  ├─ errorHandler.test.ts
+    │  ├─ userHelpers.test.ts
     │  └─ userRoutes.test.ts
     │
     └─ index.ts                                 # Application bootstrap entrypoint
