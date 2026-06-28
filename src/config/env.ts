@@ -78,7 +78,7 @@ function createConfig(env: EnvSource) {
 		}
 	}
 
-	const secret = readEnv(env, "SECRET", isProduction);
+	const secret = readEnv(env, "SECRET", isProduction, "development-secret");
 
 	if (isProduction && secret.length < 32) {
 		throw new Error("SECRET must be at least 32 characters in production");

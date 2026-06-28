@@ -7,6 +7,32 @@ const baseEnv = {
 };
 
 describe("createConfig", () => {
+	it("uses a development secret fallback outside production", () => {
+		const config = createConfig({
+			NODE_ENV: "test",
+		});
+
+		expect(config.secret).toBe("development-secret");
+	});
+
+	it("requires SECRET in production", () => {
+		expect(() =>
+			createConfig({
+				NODE_ENV: "production",
+				DATABASE_URL: "postgres://user:password@localhost:5432/app",
+				CORS_ORIGIN: "https://example.com",
+				JWT_AUDIENCE: "app-web",
+				JWT_ISSUER: "api",
+				STORAGE_DRIVER: "s3",
+				STORAGE_BUCKET: "bucket",
+				STORAGE_ENDPOINT: "https://s3.us-east-1.amazonaws.com",
+				STORAGE_REGION: "us-east-1",
+				STORAGE_ACCESS_KEY_ID: "access-key",
+				STORAGE_SECRET_ACCESS_KEY: "secret-key",
+			}),
+		).toThrow("Missing required environment variable: SECRET");
+	});
+
 	it("rejects local storage in production", () => {
 		expect(() =>
 			createConfig({
