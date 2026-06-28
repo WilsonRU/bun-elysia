@@ -1,10 +1,12 @@
-export type signinInput = {
+type SigninInput = {
 	email: string;
 	password: string;
 };
 
-export type sigupInput = {
+type SignupInput = {
 	name: string;
 	email: string;
 	password: string;
 };
+
+export type { SigninInput, SignupInput };

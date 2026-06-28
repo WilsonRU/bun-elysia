@@ -1,3 +1,50 @@
+NODE_ENV=development
 SECRET=""
 DATABASE_URL=postgresql://username:password@localhost:5432/your_database_name
-REDIS_URL=redis://localhost:6379
+DB_POOL_MAX=10
+CORS_ORIGIN=http://localhost:5173
+
+# Runtime defaults in code:
+# - ENABLE_DOCS defaults to false in production and true outside production.
+# - DB_LOG_QUERIES is honored only in development and defaults to true there.
+ENABLE_DOCS=true
+DB_LOG_QUERIES=true
+
+# JWT claims. Keep these stable across API instances.
+JWT_AUDIENCE=app-web
+JWT_ISSUER=hitransfer-api
+
+# Cache authenticated user lookups by token subject.
+# Defaults to 30000 in production and 0 outside production.
+AUTH_USER_CACHE_TTL_MS=0
+AUTH_USER_CACHE_MAX=1000
+
+# Storage adapter used by avatar uploads.
+# Supported drivers:
+# - local: stores files inside ./uploads and serves them from /user/avatars/:filename. Not supported in production.
+# - s3: uploads files to AWS S3 or another S3-compatible provider
+# - r2: uploads files to Cloudflare R2
+STORAGE_DRIVER=local
+
+# Required only when STORAGE_DRIVER=s3 or STORAGE_DRIVER=r2.
+# AWS S3 example:
+# STORAGE_BUCKET=my-bucket
+# STORAGE_ENDPOINT=https://s3.us-east-1.amazonaws.com
+# STORAGE_REGION=us-east-1
+# STORAGE_PUBLIC_BASE_URL=https://my-bucket.s3.us-east-1.amazonaws.com
+#
+# Cloudflare R2 example:
+# STORAGE_DRIVER=r2
+# STORAGE_BUCKET=my-bucket
+# STORAGE_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
+# STORAGE_REGION=auto
+# STORAGE_PUBLIC_BASE_URL=https://cdn.example.com
+STORAGE_BUCKET=
+STORAGE_ENDPOINT=
+STORAGE_REGION=auto
+STORAGE_ACCESS_KEY_ID=
+STORAGE_SECRET_ACCESS_KEY=
+
+# Optional. When empty, the API returns the provider endpoint URL.
+# Prefer setting this to a CDN/custom domain in production.
+STORAGE_PUBLIC_BASE_URL=

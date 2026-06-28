@@ -1,31 +1,45 @@
-import { AppError } from "@/shared/erros/appError";
+import { AppError } from "@/shared/errors/appError";
+import { config } from "@/config/env";
 
-export function errorHandler(ctx: any) {
-	const { code, error, set } = ctx as { code?: string; error: any; set: { status?: number | string } };
+type ErrorHandlerContext = {
+	code?: string | number;
+	error: unknown;
+	set: {
+		status?: number | string;
+	};
+};
+
+export function errorHandler(ctx: ErrorHandlerContext) {
+	const { code, error, set } = ctx;
 
 	if (error instanceof AppError) {
 		set.status = error.statusCode;
-		return { error: error.message, details: error.details };
+		return error.details ? { message: error.message, details: error.details } : { message: error.message };
 	}
 
 	if (code === "VALIDATION") {
 		set.status = 400;
 		try {
-			return { error: JSON.parse(error.message) };
+			const message = error instanceof Error ? error.message : String(error);
+			return { message: "Validation error", details: JSON.parse(message) };
 		} catch {
-			return { error: error.message };
+			return { message: error instanceof Error ? error.message : String(error) };
 		}
 	}
 
 	if (error instanceof Error) {
 		set.status = 500;
-		try {
-			return { error: JSON.parse(error.message) };
-		} catch {
-			return { error: error.message };
+		if (!config.isProduction) {
+			try {
+				return { message: "Internal server error", details: JSON.parse(error.message) };
+			} catch {
+				return { message: error.message };
+			}
 		}
+
+		return { message: "Internal server error" };
 	}
 
 	set.status = 500;
-	return { error: "Erro interno no servidor" };
+	return { message: "Internal server error" };
 }

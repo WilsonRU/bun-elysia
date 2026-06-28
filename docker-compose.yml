@@ -1,7 +1,9 @@
 services:
   postgres:
-    image: postgres:13.1
+    image: postgres:16-alpine
     environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=123456
     ports:
       - "4002:5432"

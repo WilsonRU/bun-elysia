@@ -5,7 +5,8 @@ export interface userModel {
 	name: string;
 	email: string;
 	password: string;
-	role: "free" | "paid" | "admin";
+	role: "user" | "member" | "admin";
+	avatar_url: string | null;
 	created_at: Date;
 	updated_at: Date | null;
 	deleted_at: Date | null;

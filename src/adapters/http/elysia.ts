@@ -4,30 +4,37 @@ import { errorHandler } from "@/adapters/http/middlewares/errorHandler";
 import openapi from "@elysiajs/openapi";
 import cors from "@elysiajs/cors";
 
-import { authRoutes } from "@/modules/core/routes";
+import { config } from "@/config/env";
+import { healthRoutes } from "@/adapters/http/routes/health";
+import { authRoutes } from "@/modules/auth/routes";
 import { userRoutes } from "@/modules/user/routes";
 
 export function createHttp() {
 	const app = new Elysia()
-		.get("/", () => "Go to /docs to OpenAPI Documentation")
+		.get("/", ({ set }) => {
+			set.status = 204;
+		})
+		.use(healthRoutes)
 		.use(logger())
 		.onError(errorHandler)
 		.use(
 			cors({
-				origin: "*",
+				origin: config.corsOrigin,
 				methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 				credentials: true,
 				allowedHeaders: ["Content-Type", "Authorization"],
 			}),
-		)
-		.use(
+		);
+
+	if (config.enableDocs) {
+		app.use(
 			openapi({
 				path: "/docs",
 				references: [],
 				documentation: {
 					info: {
 						title: "OpenAPI - Documentation",
-						description: "This is the OpenAPI Documentation for our API",
+						description: "OpenAPI Documentation for our RestAPI",
 						version: "1.0.0",
 					},
 					components: {
@@ -40,7 +47,7 @@ export function createHttp() {
 						},
 					},
 					tags: [
-						{ name: "Core", description: "Authentication Routes" },
+						{ name: "Auth", description: "Authentication Routes" },
 						{ name: "User", description: "User Routes" },
 					],
 				},
@@ -48,12 +55,13 @@ export function createHttp() {
 					showToolbar: "never",
 				},
 				exclude: {
-					paths: ["/health", "/"],
+					paths: ["/health", "/ready", "/"],
 				},
 			}),
-		)
-		.use(authRoutes)
-		.use(userRoutes);
+		);
+	}
+
+	app.use(authRoutes).use(userRoutes);
 
 	return app;
 }

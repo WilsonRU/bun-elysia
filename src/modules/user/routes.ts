@@ -1,18 +1,49 @@
-import { Elysia, t } from "elysia";
+import Elysia, { t } from "elysia";
 import { authGuard } from "@/adapters/http/middlewares/auth";
-import { RBAC } from "@/adapters/http/middlewares/rbac";
-import { updateUserName } from "./core";
+
+import { updateUserName, uploadAvatar } from "@/modules/user/core";
+import { TUserPublic } from "@/modules/user/types";
 
 export const userRoutes = new Elysia({ prefix: "/user" })
 	.use(authGuard)
-	.use(RBAC)
+	.get(
+		"/avatars/:filename",
+		async (ctx) => {
+			const { params, status } = ctx;
+
+			if (!/^[a-zA-Z0-9_-]+\.(png|jpg|jpeg)$/.test(params.filename)) {
+				return status(404, "File not found");
+			}
+
+			const file = Bun.file(`uploads/avatars/${params.filename}`);
+			if (!(await file.exists())) {
+				return status(404, "File not found");
+			}
+
+			return new Response(file, {
+				headers: {
+					"cache-control": "public, max-age=31536000, immutable",
+				},
+			});
+		},
+		{
+			protectedRoute: true,
+			RBAC: ["user", "member", "admin"],
+			detail: {
+				summary: "Get User Avatar",
+				tags: ["User"],
+				security: [{ bearer: [] }],
+				description: "Get a user avatar file",
+			},
+		},
+	)
 	.put(
 		"/",
 		async (ctx) => {
-			const { user, body } = ctx;
+			const { authUser, body } = ctx;
 
 			const data = await updateUserName({
-				userId: user,
+				userId: authUser.id,
 				name: body.name,
 			});
 
@@ -20,7 +51,7 @@ export const userRoutes = new Elysia({ prefix: "/user" })
 		},
 		{
 			protectedRoute: true,
-			RBAC: ["free", "paid", "admin"],
+			RBAC: ["user", "member", "admin"],
 			body: t.Object({
 				name: t.String({
 					minLength: 3,
@@ -30,14 +61,7 @@ export const userRoutes = new Elysia({ prefix: "/user" })
 			response: {
 				200: t.Object({
 					message: t.String(),
-					user: t.Object({
-						id: t.Number(),
-						name: t.String(),
-						email: t.String({ format: "email" }),
-						role: t.Union([t.Literal("free"), t.Literal("paid"), t.Literal("admin")]),
-						created_at: t.Date(),
-						updated_at: t.Optional(t.Date()),
-					}),
+					user: TUserPublic,
 				}),
 			},
 			detail: {
@@ -45,6 +69,44 @@ export const userRoutes = new Elysia({ prefix: "/user" })
 				tags: ["User"],
 				security: [{ bearer: [] }],
 				description: "Update user information",
+			},
+		},
+	)
+	.post(
+		"/avatar",
+		async (ctx) => {
+			const { authUser, body } = ctx;
+
+			const avatar = await uploadAvatar({
+				userId: authUser.id,
+				avatar: body.avatar,
+			});
+
+			return { message: "Avatar uploaded successfully", avatar_url: avatar };
+		},
+		{
+			protectedRoute: true,
+			RBAC: ["user", "member", "admin"],
+			body: t.Object({
+				avatar: t.File({ maxSize: 5 * 1024 * 1024 }),
+			}),
+			response: {
+				200: t.Object({
+					message: t.String(),
+					avatar_url: t.String(),
+				}),
+				400: t.Object({
+					message: t.String(),
+				}),
+				404: t.Object({
+					message: t.String(),
+				}),
+			},
+			detail: {
+				summary: "Upload User Avatar",
+				tags: ["User"],
+				security: [{ bearer: [] }],
+				description: "Upload or update user avatar",
 			},
 		},
 	);

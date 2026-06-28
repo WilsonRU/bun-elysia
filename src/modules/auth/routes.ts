@@ -1,9 +1,17 @@
 import Elysia, { t } from "elysia";
 import { JwtPlugin } from "@/adapters/http/security/jwt";
+import { config } from "@/config/env";
+import { createRateLimit } from "@/adapters/http/middlewares/rateLimit";
 
-import { signin, signup } from "@/modules/core/core";
+import { signin, signup } from "@/modules/auth/core";
+import { TUserPublic } from "@/modules/user/types";
 
-export const authRoutes = new Elysia({ prefix: "/core" })
+const authRateLimit = createRateLimit({
+	windowMs: 60 * 1000,
+	max: 10,
+});
+
+export const authRoutes = new Elysia({ prefix: "/auth" })
 	.use(JwtPlugin)
 	.post(
 		"/signin",
@@ -17,7 +25,8 @@ export const authRoutes = new Elysia({ prefix: "/core" })
 
 			const token = await jwt.sign({
 				sub: String(user.id),
-				aud: "app-web",
+				aud: config.jwtAudience,
+				iss: config.jwtIssuer,
 			});
 
 			ctx.set.status = 200;
@@ -33,20 +42,19 @@ export const authRoutes = new Elysia({ prefix: "/core" })
 			}),
 			response: {
 				200: t.Object({
-					user: t.Object({
-						id: t.Number(),
-						name: t.String(),
-						email: t.String({ format: "email" }),
-						created_at: t.Date({ format: "date-time" }),
-					}),
+					user: TUserPublic,
 					token: t.String(),
 				}),
 				401: t.Object({
 					message: t.String(),
 				}),
+				429: t.Object({
+					message: t.String(),
+				}),
 			},
+			beforeHandle: authRateLimit,
 			detail: {
-				tags: ["Core"],
+				tags: ["Auth"],
 				description: "User Login",
 				summary: "Authenticate user",
 			},
@@ -79,9 +87,13 @@ export const authRoutes = new Elysia({ prefix: "/core" })
 				409: t.Object({
 					message: t.String(),
 				}),
+				429: t.Object({
+					message: t.String(),
+				}),
 			},
+			beforeHandle: authRateLimit,
 			detail: {
-				tags: ["Core"],
+				tags: ["Auth"],
 				description: "User Registration",
 				summary: "Register a new user",
 			},

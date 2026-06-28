@@ -1,9 +1,10 @@
 import "elysia";
-import { JWTPayloadInput } from "@elysiajs/jwt";
+import type { JWTPayloadInput } from "@elysiajs/jwt";
+import type { AuthUser } from "@/modules/user/types";
 
 declare module "elysia" {
 	interface JwtClaims extends JWTPayloadInput {
-		[key: string]: any;
+		[key: string]: unknown;
 	}
 
 	interface Context {
@@ -11,6 +12,6 @@ declare module "elysia" {
 			sign: (payload: unknown, options?: { exp?: number }) => string;
 			verify: (token: string) => unknown;
 		};
-		user?: JwtClaims | null;
+		authUser?: AuthUser;
 	}
 }
