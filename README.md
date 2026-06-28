@@ -133,7 +133,8 @@ After starting the server, access:
     │  ├─ userHelpers.test.ts
     │  └─ userRoutes.test.ts
     │
-    └─ index.ts                                 # Application bootstrap entrypoint
+    ├─ index.ts                                 # Serverless entrypoint that exports the Elysia app
+    └─ server.ts                                # Local/Docker entrypoint that starts the port listener
 
 ## 🧪 Tests
 

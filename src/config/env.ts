@@ -86,6 +86,7 @@ function createConfig(env: EnvSource) {
 
 	return {
 		nodeEnv,
+		port: readNumberEnv(env, "PORT", 3000),
 		databaseUrl: readEnv(env, "DATABASE_URL", isProduction, "postgres://user:password@localhost:5432/mydb"),
 		dbPoolMax: readNumberEnv(env, "DB_POOL_MAX", 10),
 		redisUrl: readEnv(env, "REDIS_URL", isProduction, "redis://localhost:6379"),
