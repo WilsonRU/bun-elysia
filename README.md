@@ -71,12 +71,12 @@ After starting the server, access:
 
   Method   Path                         Description
   -------- ---------------------------- ---------------------------------
-  `GET`    `/health`                    Liveness check.
-  `GET`    `/ready`                     Readiness check with database ping.
-  `POST`   `/auth/signin`               Authenticates a user and returns a JWT.
-  `POST`   `/auth/signup`               Registers a new user.
-  `PUT`    `/user/`                     Updates the authenticated user name.
-  `POST`   `/user/avatar`               Uploads the authenticated user avatar.
+  `GET`    `/health`                    Liveness check.\
+  `GET`    `/ready`                     Readiness check with database ping.\
+  `POST`   `/auth/signin`               Authenticates a user and returns a JWT.\
+  `POST`   `/auth/signup`               Registers a new user.\
+  `PUT`    `/user/`                     Updates the authenticated user name.\
+  `POST`   `/user/avatar`               Uploads the authenticated user avatar.\
   `GET`    `/user/avatars/:filename`    Returns an authenticated avatar file.
 
 ## 📂 Project Structure
